@@ -36,8 +36,6 @@ public abstract class Movimiento {
     return this.fecha.equals(fecha);
   }
 
-  public abstract void agregateA(Cuenta cuenta);
-
   public abstract double calcularValor(Cuenta cuenta);
 }
 
@@ -50,10 +48,6 @@ class Deposito extends Movimiento {
   public double calcularValor(Cuenta cuenta) {
     return cuenta.getSaldo() + getMonto();
   }
-  public void agregateA(Cuenta cuenta) {
-    cuenta.setSaldo(calcularValor(cuenta));
-    cuenta.agregarDeposito(fecha, monto);
-  }
 }
 
 class Extraccion extends Movimiento {
@@ -63,10 +57,6 @@ class Extraccion extends Movimiento {
   public boolean isDeposito() { return false; }
 
   public double calcularValor(Cuenta cuenta) {
-    return cuenta.getSaldo() + getMonto();
-  }
-  public void agregateA(Cuenta cuenta) {
-    cuenta.setSaldo(calcularValor(cuenta));
-    cuenta.agregarExtraccion(fecha, monto);
+    return cuenta.getSaldo() - getMonto();
   }
 }
