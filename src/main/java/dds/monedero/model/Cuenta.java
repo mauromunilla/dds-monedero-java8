@@ -38,7 +38,7 @@ public class Cuenta {
     agregarDeposito(LocalDate.now(), cuanto);
   }
 
-  public void tranferirDinero(double cuanto) {
+  public void extraerDinero(double cuanto) {
     if (cuanto <= 0) {
       throw new MontoNegativoException(cuanto + ": el monto a ingresar debe ser un valor positivo");
     }
