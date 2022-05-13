@@ -1,5 +1,10 @@
 package dds.monedero.model;
 
+import dds.monedero.exceptions.MaximaCantidadDepositosException;
+import dds.monedero.exceptions.MaximoExtraccionDiarioException;
+import dds.monedero.exceptions.MontoNegativoException;
+import dds.monedero.exceptions.SaldoMenorException;
+
 import java.time.LocalDate;
 
 public abstract class Movimiento {
@@ -37,6 +42,8 @@ public abstract class Movimiento {
   }
 
   public abstract double calcularValor(Cuenta cuenta);
+
+  public abstract void operacion(Cuenta cuenta);
 }
 
 class Deposito extends Movimiento {
@@ -48,6 +55,18 @@ class Deposito extends Movimiento {
   public double calcularValor(Cuenta cuenta) {
     return cuenta.getSaldo() + getMonto();
   }
+
+  public void operacion(Cuenta cuenta) {
+      if (monto <= 0) {
+        throw new MontoNegativoException(monto + ": el monto a ingresar debe ser un valor positivo");
+      }
+
+      if (cuenta.getMovimientos().stream().filter(movimiento -> movimiento.isDeposito()).count() >= 3) {
+        throw new MaximaCantidadDepositosException("Ya excedio los " + 3 + " depositos diarios");
+      }
+
+      cuenta.agregarDeposito(LocalDate.now(), monto);
+  }
 }
 
 class Extraccion extends Movimiento {
@@ -58,5 +77,21 @@ class Extraccion extends Movimiento {
 
   public double calcularValor(Cuenta cuenta) {
     return cuenta.getSaldo() - getMonto();
+  }
+
+  public void operacion(Cuenta cuenta) {
+    if (monto <= 0) {
+      throw new MontoNegativoException(monto + ": el monto a ingresar debe ser un valor positivo");
+    }
+    if (cuenta.getSaldo() - monto < 0) {
+      throw new SaldoMenorException("No puede sacar mas de " + cuenta.getSaldo() + " $");
+    }
+    double montoExtraidoHoy = cuenta.getMontoExtraidoA(LocalDate.now());
+    double limite = 1000 - montoExtraidoHoy;
+    if (monto > limite) {
+      throw new MaximoExtraccionDiarioException("No puede extraer mas de $ " + 1000
+          + " diarios, límite: " + limite);
+    }
+    cuenta.agregarExtraccion(LocalDate.now(), monto);
   }
 }

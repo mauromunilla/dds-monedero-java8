@@ -19,24 +19,35 @@ public class MonederoTest {
   void init() {
     cuenta = new Cuenta();
   }
+  private Deposito UnDeposito(double monto) {
+    LocalDate hoy = LocalDate.now();
+    Deposito deposito = new Deposito(hoy,monto);
+    return deposito;
+  }
+
+  private Extraccion UnaExtraccion(double monto) {
+    LocalDate hoy = LocalDate.now();
+    Extraccion extraccion = new Extraccion(hoy,monto);
+    return extraccion;
+  }
 
   @Test
   void IngresarDineroEnCuenta() {
-    cuenta.ingresarDinero(1500);
+    cuenta.movimientoDeDinero(UnDeposito(1500));
     assertEquals(cuenta.getSaldo(),1500,0);
     assertEquals(cuenta.getMovimientos().size(),1,0);
   }
 
   @Test
   void IngresarMontoNegativoEnCuentaLanzaException() {
-    assertThrows(MontoNegativoException.class, () -> cuenta.ingresarDinero(-1500));
+    assertThrows(MontoNegativoException.class, () -> cuenta.movimientoDeDinero(UnDeposito(-1500)));
   }
 
   @Test
   void IngresarTresDepositosEsPermitido() {
-    cuenta.ingresarDinero(1500);
-    cuenta.ingresarDinero(456);
-    cuenta.ingresarDinero(1900);
+    cuenta.movimientoDeDinero(UnDeposito(1500));
+    cuenta.movimientoDeDinero(UnDeposito(456));
+    cuenta.movimientoDeDinero(UnDeposito(1900));
     assertEquals(cuenta.getSaldo(),3856,0);
     assertEquals(cuenta.getMovimientos().size(),3,0);
   }
@@ -44,10 +55,10 @@ public class MonederoTest {
   @Test
   void IngresarMasDeTresDepositosLanzaException() {
     assertThrows(MaximaCantidadDepositosException.class, () -> {
-          cuenta.ingresarDinero(1500);
-          cuenta.ingresarDinero(456);
-          cuenta.ingresarDinero(1900);
-          cuenta.ingresarDinero(245);
+          cuenta.movimientoDeDinero(UnDeposito(1500));
+          cuenta.movimientoDeDinero(UnDeposito(456));
+          cuenta.movimientoDeDinero(UnDeposito(1900));
+          cuenta.movimientoDeDinero(UnDeposito(245));
     });
     assertEquals(cuenta.getSaldo(),3856,0);
     assertEquals(cuenta.getMovimientos().size(),3,0);
@@ -57,7 +68,7 @@ public class MonederoTest {
   void ExtraerMasQueElSaldoLanzaException() {
     assertThrows(SaldoMenorException.class, () -> {
           cuenta.setSaldo(90);
-          cuenta.extraerDinero(1001);
+          cuenta.movimientoDeDinero(UnaExtraccion(1001));
     });
     assertEquals(cuenta.getSaldo(),90,0);
   }
@@ -66,20 +77,20 @@ public class MonederoTest {
   public void ExtraerMasDe1000LanzaException() {
     assertThrows(MaximoExtraccionDiarioException.class, () -> {
       cuenta.setSaldo(5000);
-      cuenta.extraerDinero(1001);
+      cuenta.movimientoDeDinero(UnaExtraccion(1001));
     });
     assertEquals(cuenta.getSaldo(),5000,0);
   }
 
   @Test
   public void ExtraerMontoNegativoLanzaException() {
-    assertThrows(MontoNegativoException.class, () -> cuenta.extraerDinero(-500));
+    assertThrows(MontoNegativoException.class, () -> cuenta.movimientoDeDinero(UnaExtraccion(-1500)));
   }
 
   @Test
   public void ExtraerDineroEnLaCuentaRestaSaldo() {
     cuenta.setSaldo(200);
-    cuenta.extraerDinero(150);
+    cuenta.movimientoDeDinero(UnaExtraccion(150));
     assertEquals(cuenta.getSaldo(),50,0);
   }
 
